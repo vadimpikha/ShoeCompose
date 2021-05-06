@@ -19,47 +19,49 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil.request.ImageRequest
 import com.example.shoecompose.R
-import com.example.shoecompose.data.model.Shoe
-import com.google.accompanist.coil.CoilImage
+import com.example.shoecompose.data.model.Sneaker
+import com.example.shoecompose.ui.FavoriteToggle
+import com.example.shoecompose.ui.SneakersImage
 import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.HorizontalPagerIndicator
-import com.google.accompanist.pager.rememberPagerState
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun ShoeDetailsScreen(shoe: Shoe) {
+fun ShoeDetailsScreen(
+    sneaker: Sneaker,
+    onBackPressed: () -> Unit
+) {
 
     var shoeLiked by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFE9E9E9))
+    Scaffold(
+        topBar = {
+            DetailsTopBar(
+                title = "Men's shoe",
+                onBackPressed = onBackPressed,
+                shoeLiked = shoeLiked,
+                onShoeLikeChanged = { shoeLiked = it },
+                modifier = Modifier
+                    .padding(24.dp)
+                    .statusBarsPadding()
+            )
+        }, bottomBar = {
+            DetailsBottomSheet(
+                modelName = "",
+                price = "",
+                rating = "",
+                description = sneaker.details,
+            )
+        },
+        backgroundColor = Color(0xFFE9E9E9)
     ) {
-        ShoePhotos(shoe.photos)
-
-        DetailsTopBar(
-            title = "Men's shoe",
-            onBackPressed = {},
-            shoeLiked = shoeLiked,
-            onShoeLikeChanged = { shoeLiked = it },
+        SneakersImage(
+            image = sneaker.mainPictureUrl,
             modifier = Modifier
-                .padding(24.dp)
-                .statusBarsPadding()
-        )
-
-        DetailsBottomSheet(
-            modelName = "${shoe.brand} ${shoe.model}",
-            price = "\$${shoe.price}",
-            rating = "${shoe.rating}",
-            description = shoe.description,
-            Modifier.align(Alignment.BottomCenter)
+                .padding(32.dp)
         )
     }
 
@@ -75,7 +77,8 @@ fun DetailsBottomSheet(
 ) {
     Card(
         modifier = modifier
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
     ) {
         Column(
             modifier = Modifier
@@ -133,33 +136,6 @@ fun DetailsBottomSheet(
     }
 }
 
-@ExperimentalPagerApi
-@Composable
-fun ShoePhotos(photos: List<String>) {
-    val pagerState = rememberPagerState(pageCount = photos.size)
-    Box {
-        HorizontalPager(state = pagerState) { page ->
-            val painter = rememberCoilPainter(
-                request = photos[page]
-            )
-            Image(
-                painter = painter,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f),
-                contentScale = ContentScale.Crop
-            )
-        }
-        HorizontalPagerIndicator(
-            pagerState = pagerState,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp)
-        )
-    }
-}
-
 @Composable
 fun DetailsTopBar(
     title: String,
@@ -194,19 +170,9 @@ fun DetailsTopBar(
             fontWeight = FontWeight.Bold
         )
 
-        IconToggleButton(
-            checked = shoeLiked,
-            onCheckedChange = onShoeLikeChanged,
-            modifier = Modifier.background(
-                if (shoeLiked) MaterialTheme.colors.secondary else Color.White,
-                CircleShape
-            )
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_baseline_favorite_24),
-                contentDescription = "Back",
-                tint = if (shoeLiked) MaterialTheme.colors.onSecondary else Color.Gray
-            )
-        }
+        FavoriteToggle(
+            isFavorite = shoeLiked,
+            onFavoriteChanged = onShoeLikeChanged
+        )
     }
 }
