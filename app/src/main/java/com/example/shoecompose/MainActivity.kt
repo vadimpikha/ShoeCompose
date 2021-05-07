@@ -3,6 +3,9 @@ package com.example.shoecompose
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
@@ -43,14 +46,32 @@ class MainActivity : ComponentActivity() {
                             )
                         ) {
                             val id = it.arguments?.getInt("sneakerId") ?: 0
-                            ShoeDetailsScreen(
-                                sneaker = sneakers.single { it.id == id },
-                                onBackPressed = { navController.popBackStack() }
-                            )
+                            EnterAnimation {
+                                ShoeDetailsScreen(
+                                    sneaker = sneakers.single { it.id == id },
+                                    onBackPressed = { navController.popBackStack() }
+                                )
+                            }
                         }
                     }
                 }
             }
         }
     }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun EnterAnimation(content: @Composable () -> Unit) {
+    AnimatedVisibility(
+        visible = true,
+        enter = slideInVertically(
+            initialOffsetY = { -40 }
+        ) + expandVertically(
+            expandFrom = Alignment.Top
+        ) + fadeIn(initialAlpha = 0.3f),
+        exit = slideOutVertically() + shrinkVertically() + fadeOut(),
+        content = content,
+        initiallyVisible = false
+    )
 }
