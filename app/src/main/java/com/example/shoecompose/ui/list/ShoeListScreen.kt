@@ -11,14 +11,23 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shoecompose.data.model.Sneaker
+import com.example.shoecompose.ui.FavoriteIndicator
+import com.example.shoecompose.ui.FavoriteToggle
 import com.example.shoecompose.ui.SneakersImage
 import com.google.accompanist.insets.LocalWindowInsets
+import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.insets.toPaddingValues
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -29,22 +38,33 @@ fun ShoeListScreen(
 ) {
 
     Scaffold(
-        backgroundColor = Color(0xFFE9E9E9)
+        backgroundColor = Color(245, 245, 245),
+        topBar = {
+            Text(
+                text = "Shoe Store",
+                style = MaterialTheme.typography.h5,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .padding(bottom = 16.dp)
+                    .fillMaxWidth()
+            )
+        }
     ) { paddingValues ->
 
         LazyVerticalGrid(
             cells = GridCells.Fixed(2),
             modifier = Modifier
                 .padding(paddingValues),
-            contentPadding = LocalWindowInsets.current.statusBars.toPaddingValues(
-                additionalHorizontal = 24.dp,
-                additionalVertical = 24.dp
+            contentPadding = LocalWindowInsets.current.navigationBars.toPaddingValues(
+                additionalHorizontal = 24.dp
             )
         ) {
             itemsIndexed(sneakers) { index, item ->
                 SneakerPreviewCard(
-                    item,
-                    Modifier
+                    sneaker = item,
+                    modifier = Modifier
                         .aspectRatio(.7f)
                         .padding(
                             start = 8.dp.takeIf { index % 2 == 1 } ?: 0.dp,
@@ -103,12 +123,18 @@ fun SneakerPreviewCard(sneaker: Sneaker, modifier: Modifier = Modifier, onClick:
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        Row {
+                        Row(
+                            verticalAlignment = Alignment.Bottom
+                        ) {
                             Text(
                                 text = formatPrice(sneaker.retailPriceCents),
                                 style = MaterialTheme.typography.h6,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                            FavoriteIndicator(
+                                isFavorite = sneaker.isFavorite
                             )
                         }
                     }
@@ -118,7 +144,13 @@ fun SneakerPreviewCard(sneaker: Sneaker, modifier: Modifier = Modifier, onClick:
     }
 }
 
-fun formatPrice(cents: Int?): String {
-    if (cents == null) return "\$???"
-    return "\$${cents / 100}"
+@Composable
+fun formatPrice(cents: Int?) = buildAnnotatedString {
+    withStyle(style = SpanStyle(color = MaterialTheme.colors.secondary)) {
+        append("\$")
+    }
+    if (cents == null)
+        append("???")
+    else
+        append("${cents / 100}")
 }

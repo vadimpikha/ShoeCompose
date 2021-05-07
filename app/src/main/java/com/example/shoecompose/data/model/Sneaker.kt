@@ -69,4 +69,7 @@ data class Sneaker(
     @SerialName("upper_material")
     val upperMaterial: String?
 ) {
+
+    var isFavorite: Boolean = (1..100).random() > 50
+
 }

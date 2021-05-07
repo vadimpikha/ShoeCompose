@@ -16,13 +16,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.shoecompose.R
 import com.example.shoecompose.data.model.Sneaker
 import com.example.shoecompose.ui.FavoriteToggle
 import com.example.shoecompose.ui.SneakersImage
+import com.example.shoecompose.ui.list.formatPrice
 import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.statusBarsPadding
@@ -35,28 +38,33 @@ fun ShoeDetailsScreen(
     onBackPressed: () -> Unit
 ) {
 
-    var shoeLiked by remember { mutableStateOf(false) }
+    var isFavorite by remember {
+        mutableStateOf(sneaker.isFavorite)
+    }
 
     Scaffold(
         topBar = {
             DetailsTopBar(
                 title = "Men's shoe",
                 onBackPressed = onBackPressed,
-                shoeLiked = shoeLiked,
-                onShoeLikeChanged = { shoeLiked = it },
+                shoeLiked = isFavorite,
+                onShoeLikeChanged = {
+                    isFavorite = it
+                    sneaker.isFavorite = it
+                },
                 modifier = Modifier
                     .padding(24.dp)
                     .statusBarsPadding()
             )
         }, bottomBar = {
             DetailsBottomSheet(
-                modelName = "",
-                price = "",
+                modelName = sneaker.name,
+                price = formatPrice(sneaker.retailPriceCents),
                 rating = "",
-                description = sneaker.details,
+                description = sneaker.storyHtml ?: "No info",
             )
         },
-        backgroundColor = Color(0xFFE9E9E9)
+        backgroundColor = Color(245, 245, 245)
     ) {
         SneakersImage(
             image = sneaker.mainPictureUrl,
@@ -70,7 +78,7 @@ fun ShoeDetailsScreen(
 @Composable
 fun DetailsBottomSheet(
     modelName: String,
-    price: String,
+    price: AnnotatedString,
     rating: String,
     description: String,
     modifier: Modifier = Modifier
@@ -96,8 +104,10 @@ fun DetailsBottomSheet(
                 )
                 Text(
                     text = price,
-                    style = MaterialTheme.typography.body1,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.h6,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(start = 8.dp)
                 )
             }
 
